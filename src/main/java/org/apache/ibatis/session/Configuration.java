@@ -171,6 +171,10 @@ public class Configuration {
     this.environment = environment;
   }
 
+  /**
+   *  添加默认别名，及注册默认的脚本语言，
+   * （在插入一种语言的驱动（language driver）之后来写基于这种语言的动态 SQL 查询）
+   */
   public Configuration() {
     typeAliasRegistry.registerAlias("JDBC", JdbcTransactionFactory.class);
     typeAliasRegistry.registerAlias("MANAGED", ManagedTransactionFactory.class);

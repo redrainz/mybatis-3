@@ -29,6 +29,10 @@ import org.w3c.dom.NodeList;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 将xml解析成
+ */
 public class XNode {
 
   private final Node node;

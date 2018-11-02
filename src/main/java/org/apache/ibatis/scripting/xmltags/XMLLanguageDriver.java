@@ -31,6 +31,10 @@ import org.apache.ibatis.session.Configuration;
 /**
  * @author Eduardo Macarron
  */
+
+/**
+ * 处理XML中的sql语句
+ */
 public class XMLLanguageDriver implements LanguageDriver {
 
   @Override

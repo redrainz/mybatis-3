@@ -51,11 +51,29 @@ import org.apache.ibatis.type.TypeHandler;
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
+
+/**
+ * 用于解析XML中config文件
+ */
 public class XMLConfigBuilder extends BaseBuilder {
 
+  /**
+   * 控制XMLConfigBuilder对象只能解析一次config文件，
+   * 如果需要解析多个需重新new一个XMLConfigBuilder类
+   */
   private boolean parsed;
+  /**
+   * 通常传入XMLMapperEntityResolver
+   * 解析xml文件的解析器
+   */
   private final XPathParser parser;
+  /**
+   * 解析的环境名称
+   */
   private String environment;
+  /**
+   * 反射工厂用于settingsAsProperties（转换config中的settings标签）
+   */
   private final ReflectorFactory localReflectorFactory = new DefaultReflectorFactory();
 
   public XMLConfigBuilder(Reader reader) {
@@ -66,6 +84,12 @@ public class XMLConfigBuilder extends BaseBuilder {
     this(reader, environment, null);
   }
 
+  /**
+   * SqlSessionFactoryBuilder 使用这个构造器
+   * @param reader
+   * @param environment
+   * @param props
+   */
   public XMLConfigBuilder(Reader reader, String environment, Properties props) {
     this(new XPathParser(reader, true, props, new XMLMapperEntityResolver()), environment, props);
   }
@@ -91,6 +115,10 @@ public class XMLConfigBuilder extends BaseBuilder {
     this.parser = parser;
   }
 
+  /**
+   * xml解析开始，此类只能解析一次xml
+   * @return
+   */
   public Configuration parse() {
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
@@ -100,10 +128,17 @@ public class XMLConfigBuilder extends BaseBuilder {
     return configuration;
   }
 
+  /**
+   * xml解析开始
+   * @param root
+   */
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
+
+       // 解析config中的配置properties，
       propertiesElement(root.evalNode("properties"));
+
       Properties settings = settingsAsProperties(root.evalNode("settings"));
       loadCustomVfs(settings);
       typeAliasesElement(root.evalNode("typeAliases"));
@@ -268,13 +303,25 @@ public class XMLConfigBuilder extends BaseBuilder {
     configuration.setConfigurationFactory(resolveClass(props.getProperty("configurationFactory")));
   }
 
+  /**
+   * 处理environment配置
+   * @param context
+   * @throws Exception
+   */
   private void environmentsElement(XNode context) throws Exception {
     if (context != null) {
       if (environment == null) {
         environment = context.getStringAttribute("default");
       }
+      /**
+       * 循环读出所有的environment标签
+       */
       for (XNode child : context.getChildren()) {
         String id = child.getStringAttribute("id");
+        /**
+         * 如果配置中的environment.id与this.environment相同则执行、
+         * 没有判重机制，environment.id相同，后者覆盖前者
+         */
         if (isSpecifiedEnvironment(id)) {
           TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
           DataSourceFactory dsFactory = dataSourceElement(child.evalNode("dataSource"));
@@ -387,6 +434,11 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 判断environment是否与config中的environment.id是否一致
+   * @param id
+   * @return
+   */
   private boolean isSpecifiedEnvironment(String id) {
     if (environment == null) {
       throw new BuilderException("No environment specified.");

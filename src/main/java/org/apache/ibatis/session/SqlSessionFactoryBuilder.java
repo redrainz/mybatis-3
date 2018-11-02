@@ -30,6 +30,10 @@ import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
  *
  * @author Clinton Begin
  */
+
+/**
+ * 用于构建SqlSessionFactory
+ */
 public class SqlSessionFactoryBuilder {
 
   public SqlSessionFactory build(Reader reader) {
@@ -74,6 +78,9 @@ public class SqlSessionFactoryBuilder {
 
   public SqlSessionFactory build(InputStream inputStream, String environment, Properties properties) {
     try {
+      /**
+       * 解析XMLConfig
+       */
       XMLConfigBuilder parser = new XMLConfigBuilder(inputStream, environment, properties);
       return build(parser.parse());
     } catch (Exception e) {
@@ -87,7 +94,13 @@ public class SqlSessionFactoryBuilder {
       }
     }
   }
-    
+
+  /**
+   *  通过Configuration来创建 DefaultSqlSessionFactory，所有的构造器都是通过此方法构造
+   *  在与spring整合中SqlSessionFactoryBean也将使用此方法构建
+   * @param config
+   * @return
+   */
   public SqlSessionFactory build(Configuration config) {
     return new DefaultSqlSessionFactory(config);
   }

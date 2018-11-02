@@ -35,10 +35,18 @@ import org.apache.ibatis.io.Resources;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 类型别名注册类
+ *
+ */
 public class TypeAliasRegistry {
 
   private final Map<String, Class<?>> TYPE_ALIASES = new HashMap<String, Class<?>>();
 
+  /**
+   * 默认别名
+   */
   public TypeAliasRegistry() {
     registerAlias("string", String.class);
 
@@ -102,6 +110,9 @@ public class TypeAliasRegistry {
 
   @SuppressWarnings("unchecked")
   // throws class cast exception as well if types cannot be assigned
+  /**
+   * 处理别名
+   */
   public <T> Class<T> resolveAlias(String string) {
     try {
       if (string == null) {
@@ -121,10 +132,19 @@ public class TypeAliasRegistry {
     }
   }
 
+  /**
+   * 批量注册别名
+   * @param packageName
+   */
   public void registerAliases(String packageName){
     registerAliases(packageName, Object.class);
   }
 
+  /**
+   * 批量注册别名
+   * @param packageName
+   * @param superType
+   */
   public void registerAliases(String packageName, Class<?> superType){
     ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<Class<?>>();
     resolverUtil.find(new ResolverUtil.IsA(superType), packageName);
@@ -137,7 +157,10 @@ public class TypeAliasRegistry {
       }
     }
   }
-
+  /**
+   * 注册别名
+   * @param type
+   */
   public void registerAlias(Class<?> type) {
     String alias = type.getSimpleName();
     Alias aliasAnnotation = type.getAnnotation(Alias.class);
@@ -147,6 +170,11 @@ public class TypeAliasRegistry {
     registerAlias(alias, type);
   }
 
+  /**
+   * 注册别名
+   * @param alias
+   * @param value
+   */
   public void registerAlias(String alias, Class<?> value) {
     if (alias == null) {
       throw new TypeException("The parameter alias cannot be null");
@@ -159,6 +187,11 @@ public class TypeAliasRegistry {
     TYPE_ALIASES.put(key, value);
   }
 
+  /**
+   * 注册别名
+   * @param alias
+   * @param value
+   */
   public void registerAlias(String alias, String value) {
     try {
       registerAlias(alias, Resources.classForName(value));
@@ -169,6 +202,10 @@ public class TypeAliasRegistry {
   
   /**
    * @since 3.2.2
+   */
+  /**
+   * 获取所有别名
+   * @return
    */
   public Map<String, Class<?>> getTypeAliases() {
     return Collections.unmodifiableMap(TYPE_ALIASES);
