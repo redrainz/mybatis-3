@@ -29,6 +29,11 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
 /**
  * @author Clinton Begin
  */
+
+
+/**
+ * 获取一个class的属性与方法
+ */
 public class MetaClass {
 
   private final ReflectorFactory reflectorFactory;

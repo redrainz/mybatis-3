@@ -39,6 +39,10 @@ import org.apache.ibatis.logging.LogFactory;
  * 
  * @author Ben Gunter
  */
+
+/**
+ * 虚拟文件系统(VFS),用来读取服务器里的资源
+ */
 public class DefaultVFS extends VFS {
   private static final Log log = LogFactory.getLog(DefaultVFS.class);
 

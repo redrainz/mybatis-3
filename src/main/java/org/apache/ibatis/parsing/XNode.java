@@ -31,7 +31,8 @@ import org.w3c.dom.NodeList;
  */
 
 /**
- * 将xml解析成
+ * 将xml解析成XNode
+ * 将/a/b/映射成node对象
  */
 public class XNode {
 
@@ -55,6 +56,10 @@ public class XNode {
     return new XNode(xpathParser, node, variables);
   }
 
+  /**
+   * 获取父节点
+   * @return
+   */
   public XNode getParent() {
     Node parent = node.getParentNode();
     if (parent == null || !(parent instanceof Element)) {
@@ -64,6 +69,13 @@ public class XNode {
     }
   }
 
+  /**
+   * <employee id="${id_var}">
+   *    <height units="ft">5.8</height>
+   * </employee>
+   * node 转换成 /employee/height
+   * @return
+   */
   public String getPath() {
     StringBuilder builder = new StringBuilder();
     Node current = node;
@@ -77,6 +89,15 @@ public class XNode {
     return builder.toString();
   }
 
+  /**
+   * <employee id="${id_var}">
+   *    <height units="ft">5.8</height>
+   * </employee>
+   * XNode node = parser.evalNode("/employee/height");
+   *
+   * node 转换成 employee[${id_var}]_height
+   * @return
+   */
   public String getValueBasedIdentifier() {
     StringBuilder builder = new StringBuilder();
     XNode current = this;
@@ -112,6 +133,11 @@ public class XNode {
     return xpathParser.evalDouble(node, expression);
   }
 
+  /**
+   *  /employee/height 转换成 nodes
+   * @param expression
+   * @return
+   */
   public List<XNode> evalNodes(String expression) {
     return xpathParser.evalNodes(node, expression);
   }

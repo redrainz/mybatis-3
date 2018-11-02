@@ -231,15 +231,25 @@ public class XPathParser {
     return xnodes;
   }
 
+    /**
+     * 获取节点
+     * @param expression
+     * @return
+     */
   public XNode evalNode(String expression) {
     return evalNode(document, expression);
   }
-
+    /**
+     * 获取节点
+     * @param expression
+     * @return
+     */
   public XNode evalNode(Object root, String expression) {
     Node node = (Node) evaluate(expression, root, XPathConstants.NODE);
     if (node == null) {
       return null;
     }
+    //封装成XNode返回
     return new XNode(this, node, variables);
   }
 
