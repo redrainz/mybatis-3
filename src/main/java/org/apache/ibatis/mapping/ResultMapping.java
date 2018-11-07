@@ -28,6 +28,10 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * resultMap的每一个属性的映射
+ */
 public class ResultMapping {
 
   private Configuration configuration;
