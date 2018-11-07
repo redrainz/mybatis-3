@@ -18,6 +18,15 @@ package org.apache.ibatis.mapping;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 构造器元素中的两种标签
+ *
+ * <constructor>
+ *    <idArg column="id" javaType="int"/>
+ *    <arg column="username" javaType="String"/>
+ * </constructor>
+ */
 public enum ResultFlag {
   ID, CONSTRUCTOR
 }

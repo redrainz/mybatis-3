@@ -26,6 +26,10 @@ import org.apache.ibatis.cache.Cache;
  *
  * @author Clinton Begin
  */
+
+/**
+ * LRU数据淘汰算法
+ */
 public class LruCache implements Cache {
 
   private final Cache delegate;

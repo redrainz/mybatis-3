@@ -398,6 +398,9 @@ public final class TypeHandlerRegistry {
   // Construct a handler (used also from Builders)
 
   @SuppressWarnings("unchecked")
+  /**
+   * 先返回javaTypeClass的类型处理器，如果javaTypeClass没有，就返回typeHandlerClass的类型处理器
+   */
   public <T> TypeHandler<T> getInstance(Class<?> javaTypeClass, Class<?> typeHandlerClass) {
     if (javaTypeClass != null) {
       try {

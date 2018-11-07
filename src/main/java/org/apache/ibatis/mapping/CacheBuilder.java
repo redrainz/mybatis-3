@@ -37,6 +37,11 @@ import org.apache.ibatis.reflection.SystemMetaObject;
 /**
  * @author Clinton Begin
  */
+
+
+/**
+ * 缓存构建
+ */
 public class CacheBuilder {
   private final String id;
   private Class<? extends Cache> implementation;
@@ -57,6 +62,11 @@ public class CacheBuilder {
     return this;
   }
 
+  /**
+   * 添加装饰器
+   * @param decorator
+   * @return
+   */
   public CacheBuilder addDecorator(Class<? extends Cache> decorator) {
     if (decorator != null) {
       this.decorators.add(decorator);
@@ -89,13 +99,20 @@ public class CacheBuilder {
     return this;
   }
 
+  /**
+   * 构建缓存
+   * @return
+   */
   public Cache build() {
     setDefaultImplementations();
+    //实例化，反射
     Cache cache = newBaseCacheInstance(implementation, id);
     setCacheProperties(cache);
     // issue #352, do not apply decorators to custom caches
+    //默认缓存
     if (PerpetualCache.class.equals(cache.getClass())) {
       for (Class<? extends Cache> decorator : decorators) {
+        //实例化缓存装饰器
         cache = newCacheDecoratorInstance(decorator, cache);
         setCacheProperties(cache);
       }
@@ -106,6 +123,9 @@ public class CacheBuilder {
     return cache;
   }
 
+  /**
+   * 设置默认缓存实现
+   */
   private void setDefaultImplementations() {
     if (implementation == null) {
       implementation = PerpetualCache.class;
@@ -114,7 +134,10 @@ public class CacheBuilder {
       }
     }
   }
-
+  /**
+   * 设置缓存属性，反射
+   * @param cache
+   */
   private Cache setStandardDecorators(Cache cache) {
     try {
       MetaObject metaCache = SystemMetaObject.forObject(cache);
@@ -139,6 +162,11 @@ public class CacheBuilder {
     }
   }
 
+  /**
+   * 设置缓存属性，反射
+   * properties
+   * @param cache
+   */
   private void setCacheProperties(Cache cache) {
     if (properties != null) {
       MetaObject metaCache = SystemMetaObject.forObject(cache);
@@ -186,15 +214,28 @@ public class CacheBuilder {
     }
   }
 
+  /**
+   * 实例化缓存
+   * @param cacheClass
+   * @param id
+   * @return
+   */
   private Cache newBaseCacheInstance(Class<? extends Cache> cacheClass, String id) {
+    //获取缓存一个String构造参数的构造器
     Constructor<? extends Cache> cacheConstructor = getBaseCacheConstructor(cacheClass);
     try {
+      //实例化
       return cacheConstructor.newInstance(id);
     } catch (Exception e) {
       throw new CacheException("Could not instantiate cache implementation (" + cacheClass + "). Cause: " + e, e);
     }
   }
 
+  /**
+   * 获取缓存一个String构造参数的构造器
+   * @param cacheClass
+   * @return
+   */
   private Constructor<? extends Cache> getBaseCacheConstructor(Class<? extends Cache> cacheClass) {
     try {
       return cacheClass.getConstructor(String.class);
@@ -203,7 +244,11 @@ public class CacheBuilder {
           "Base cache implementations must have a constructor that takes a String id as a parameter.  Cause: " + e, e);
     }
   }
-
+  /**
+   * 实例化缓存装饰器
+   * @param cacheClass
+   * @return
+   */
   private Cache newCacheDecoratorInstance(Class<? extends Cache> cacheClass, Cache base) {
     Constructor<? extends Cache> cacheConstructor = getCacheDecoratorConstructor(cacheClass);
     try {
@@ -213,6 +258,11 @@ public class CacheBuilder {
     }
   }
 
+  /**
+   * 获取缓存装饰器的一个Cache构造参数的构造器
+   * @param cacheClass
+   * @return
+   */
   private Constructor<? extends Cache> getCacheDecoratorConstructor(Class<? extends Cache> cacheClass) {
     try {
       return cacheClass.getConstructor(Cache.class);
