@@ -31,6 +31,10 @@ import org.apache.ibatis.session.Configuration;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 解析后的sql语句存放类
+ */
 public final class MappedStatement {
 
   private String resource;

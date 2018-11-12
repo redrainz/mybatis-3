@@ -76,6 +76,14 @@ public abstract class BaseBuilder {
     }
   }
 
+  /**
+   * 获取结果集类型类
+   * FORWARD_ONLY
+   * SCROLL_INSENSITIVE
+   * SCROLL_SENSITIVE
+   * @param alias
+   * @return
+   */
   protected ResultSetType resolveResultSetType(String alias) {
     if (alias == null) {
       return null;

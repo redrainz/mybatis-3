@@ -32,6 +32,10 @@ import org.apache.ibatis.session.Configuration;
  * @since 3.2.0
  * @author Eduardo Macarron
  */
+
+/**
+ * 静态sql
+ */
 public class RawSqlSource implements SqlSource {
 
   private final SqlSource sqlSource;

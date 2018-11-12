@@ -32,6 +32,10 @@ import org.w3c.dom.NodeList;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 处理sql语句
+ */
 public class XMLScriptBuilder extends BaseBuilder {
 
   private final XNode context;
@@ -60,6 +64,11 @@ public class XMLScriptBuilder extends BaseBuilder {
     return sqlSource;
   }
 
+  /**
+   * 处理${}
+   * @param node
+   * @return
+   */
   List<SqlNode> parseDynamicTags(XNode node) {
     List<SqlNode> contents = new ArrayList<SqlNode>();
     NodeList children = node.getNode().getChildNodes();

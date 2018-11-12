@@ -30,6 +30,10 @@ import org.apache.ibatis.session.RowBounds;
  * @author Clinton Begin
  * @author Jeff Butler
  */
+
+/**
+ * 处理SelectKey标签类
+ */
 public class SelectKeyGenerator implements KeyGenerator {
   
   public static final String SELECT_KEY_SUFFIX = "!selectKey";

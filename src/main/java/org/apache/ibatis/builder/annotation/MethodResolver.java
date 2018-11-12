@@ -20,6 +20,10 @@ import java.lang.reflect.Method;
 /**
  * @author Eduardo Macarron
  */
+
+/**
+ * 方法处理器类
+ */
 public class MethodResolver {
   private final MapperAnnotationBuilder annotationBuilder;
   private final Method method;

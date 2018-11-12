@@ -31,6 +31,10 @@ import org.w3c.dom.NodeList;
 /**
  * @author Frank D. Martinez [mnesarco]
  */
+
+/**
+ * 处理sql语句内部标签类
+ */
 public class XMLIncludeTransformer {
 
   private final Configuration configuration;
@@ -41,6 +45,10 @@ public class XMLIncludeTransformer {
     this.builderAssistant = builderAssistant;
   }
 
+  /**
+   * 处理sql语句内部标签
+   * @param source
+   */
   public void applyIncludes(Node source) {
     Properties variablesContext = new Properties();
     Properties configurationVariables = configuration.getVariables();
@@ -52,14 +60,26 @@ public class XMLIncludeTransformer {
 
   /**
    * Recursively apply includes through all SQL fragments.
+   * 递归的填入所有sql片段
    * @param source Include node in DOM tree
    * @param variablesContext Current context for static variables with values
    */
+
+  /**
+   * 处理sql语句内部标签 允许嵌套
+   * @param source
+   * @param variablesContext  configuration中的Variables configuration.getVariables()
+   * @param included 嵌套 是否嵌套
+   */
   private void applyIncludes(Node source, final Properties variablesContext, boolean included) {
+    //include标签
     if (source.getNodeName().equals("include")) {
+      //找到refid引用的节点
       Node toInclude = findSqlFragment(getStringAttribute(source, "refid"), variablesContext);
       Properties toIncludeContext = getVariablesContext(source, variablesContext);
+      //处理嵌套的标签
       applyIncludes(toInclude, toIncludeContext, true);
+      //
       if (toInclude.getOwnerDocument() != source.getOwnerDocument()) {
         toInclude = source.getOwnerDocument().importNode(toInclude, true);
       }
@@ -80,10 +100,17 @@ public class XMLIncludeTransformer {
     }
   }
 
+  /**
+   * 获取引用的SqlFragment
+   * @param refid
+   * @param variables
+   * @return
+   */
   private Node findSqlFragment(String refid, Properties variables) {
     refid = PropertyParser.parse(refid, variables);
     refid = builderAssistant.applyCurrentNamespace(refid, true);
     try {
+      //获取SqlFragments 节点
       XNode nodeToInclude = configuration.getSqlFragments().get(refid);
       return nodeToInclude.getNode().cloneNode(true);
     } catch (IllegalArgumentException e) {

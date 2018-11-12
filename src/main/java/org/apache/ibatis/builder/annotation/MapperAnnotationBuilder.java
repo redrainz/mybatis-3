@@ -92,6 +92,10 @@ import org.apache.ibatis.type.UnknownTypeHandler;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 处理mapper接口注解信息
+ */
 public class MapperAnnotationBuilder {
 
   private final Set<Class<? extends Annotation>> sqlAnnotationTypes = new HashSet<Class<? extends Annotation>>();
@@ -101,6 +105,11 @@ public class MapperAnnotationBuilder {
   private final MapperBuilderAssistant assistant;
   private final Class<?> type;
 
+  /**
+   * 初始化
+   * @param configuration
+   * @param type
+   */
   public MapperAnnotationBuilder(Configuration configuration, Class<?> type) {
     String resource = type.getName().replace('.', '/') + ".java (best guess)";
     this.assistant = new MapperBuilderAssistant(configuration, resource);
@@ -118,19 +127,42 @@ public class MapperAnnotationBuilder {
     sqlProviderAnnotationTypes.add(DeleteProvider.class);
   }
 
+  /**
+   * 解析
+   */
   public void parse() {
     String resource = type.toString();
+    //如果没有被加载过
     if (!configuration.isResourceLoaded(resource)) {
+      //通过mapper接口查找xml配置并加载
       loadXmlResource();
       configuration.addLoadedResource(resource);
       assistant.setCurrentNamespace(type.getName());
+      //处理缓存
       parseCache();
+      //处理缓存引用
       parseCacheRef();
       Method[] methods = type.getMethods();
       for (Method method : methods) {
         try {
           // issue #237
+          /**
+           * issue #237
+           * 此处描述的Java 8编译器的更改导致MyBatis在解析使用泛型的带注释的映射器接口时失败。
+           * 简而言之，新的Java 8编译器在编译扩展通用接口的接口时，会在生成的类文件中创建阴影合成桥接方法，
+           * 其名称和注释与通用接口中声明的方法相同。生成的类文件包含两个具有相同名称和注释的方法。
+           * 这会导致MyBatis在解析映射器类文件时抛出以下异常：
+           * Error while adding the mapper 'interface MyMapper' to configuration.
+           * java.lang.IllegalArgumentException: Mapped Statements collection already contains value for MyMapper.insert!selectKey
+           */
+          /**
+           * 桥接方法：
+           * 1.一个子类在继承（或实现）一个父类（或接口）的泛型方法时，
+           * 在子类中明确指定了泛型类型，那么在编译时编译器会自动生成桥接方法（其中一种情况）
+           */
+          //如果不是桥接方法
           if (!method.isBridge()) {
+            //处理sql语句
             parseStatement(method);
           }
         } catch (IncompleteElementException e) {
@@ -138,9 +170,14 @@ public class MapperAnnotationBuilder {
         }
       }
     }
+    //处理出错的sql语句，不一定错误，有可能是暂时未加载到引用的资源
     parsePendingMethods();
   }
 
+  /**
+   * 取出所有出错的sql语句并处理出错的sql语句
+   * 不一定错误，有可能是暂时未加载到引用的资源
+   */
   private void parsePendingMethods() {
     Collection<MethodResolver> incompleteMethods = configuration.getIncompleteMethods();
     synchronized (incompleteMethods) {
@@ -156,6 +193,9 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  /**
+   * 通过mapper接口查找xml配置并加载
+   */
   private void loadXmlResource() {
     // Spring may not know the real resource name so we check a flag
     // to prevent loading again a resource twice
@@ -175,6 +215,11 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  /**
+   * @CacheNamespace
+   * 处理缓存
+   *
+   */
   private void parseCache() {
     CacheNamespace cacheDomain = type.getAnnotation(CacheNamespace.class);
     if (cacheDomain != null) {
@@ -185,6 +230,13 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  /**
+   * @Property
+   * 处理参数
+   *
+   * @param properties
+   * @return
+   */
   private Properties convertToProperties(Property[] properties) {
     if (properties.length == 0) {
       return null;
@@ -197,6 +249,12 @@ public class MapperAnnotationBuilder {
     return props;
   }
 
+  /**
+   * @CacheNamespaceRef
+   * value name 二者选一
+   * 处理缓存引用
+   *
+   */
   private void parseCacheRef() {
     CacheNamespaceRef cacheDomainRef = type.getAnnotation(CacheNamespaceRef.class);
     if (cacheDomainRef != null) {
@@ -283,9 +341,16 @@ public class MapperAnnotationBuilder {
     return null;
   }
 
+  /**
+   * 处理sql语句
+   * @param method
+   */
   void parseStatement(Method method) {
+    //处理参数类型
     Class<?> parameterTypeClass = getParameterType(method);
+    //处理语言驱动
     LanguageDriver languageDriver = getLanguageDriver(method);
+    //获取sql语句
     SqlSource sqlSource = getSqlSourceFromAnnotations(method, parameterTypeClass, languageDriver);
     if (sqlSource != null) {
       Options options = method.getAnnotation(Options.class);
@@ -385,10 +450,19 @@ public class MapperAnnotationBuilder {
     return assistant.getLanguageDriver(langClass);
   }
 
+  /**
+   * 处理参数类型
+   * 如果参数除RowBounds、ResultHandler不只一个，则返回ParamMap
+   * @param method
+   * @return
+   */
   private Class<?> getParameterType(Method method) {
     Class<?> parameterType = null;
     Class<?>[] parameterTypes = method.getParameterTypes();
     for (Class<?> currentParameterType : parameterTypes) {
+      //isAssignableFrom
+      // 判定此 Class 对象所表示的类或接口与指定的 Class 参数所表示的类或接口是否相同，或是否是其超类或超接口
+      //如果参数不只一个，则返回ParamMap
       if (!RowBounds.class.isAssignableFrom(currentParameterType) && !ResultHandler.class.isAssignableFrom(currentParameterType)) {
         if (parameterType == null) {
           parameterType = currentParameterType;
@@ -452,6 +526,13 @@ public class MapperAnnotationBuilder {
     return returnType;
   }
 
+  /**
+   * 处理sql语句
+   * @param method
+   * @param parameterType
+   * @param languageDriver
+   * @return
+   */
   private SqlSource getSqlSourceFromAnnotations(Method method, Class<?> parameterType, LanguageDriver languageDriver) {
     try {
       Class<? extends Annotation> sqlAnnotationType = getSqlAnnotationType(method);
