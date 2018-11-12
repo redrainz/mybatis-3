@@ -271,6 +271,12 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  /**
+   * 如果没有@ResultMap注解并且是select
+   * 处理ResultMap
+   * @param method
+   * @return
+   */
   private String parseResultMap(Method method) {
     Class<?> returnType = getReturnType(method);
     ConstructorArgs args = method.getAnnotation(ConstructorArgs.class);
@@ -354,11 +360,13 @@ public class MapperAnnotationBuilder {
     SqlSource sqlSource = getSqlSourceFromAnnotations(method, parameterTypeClass, languageDriver);
     if (sqlSource != null) {
       Options options = method.getAnnotation(Options.class);
+      //接口的全限定名.方法名
       final String mappedStatementId = type.getName() + "." + method.getName();
       Integer fetchSize = null;
       Integer timeout = null;
       StatementType statementType = StatementType.PREPARED;
       ResultSetType resultSetType = ResultSetType.FORWARD_ONLY;
+      //返回注解名 insert|update|delete|select
       SqlCommandType sqlCommandType = getSqlCommandType(method);
       boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
       boolean flushCache = !isSelect;
@@ -371,6 +379,7 @@ public class MapperAnnotationBuilder {
         // first check for SelectKey annotation - that overrides everything else
         SelectKey selectKey = method.getAnnotation(SelectKey.class);
         if (selectKey != null) {
+          //处理SelectKey
           keyGenerator = handleSelectKeyAnnotation(selectKey, mappedStatementId, getParameterType(method), languageDriver);
           keyProperty = selectKey.keyProperty();
         } else if (options == null) {
@@ -383,7 +392,7 @@ public class MapperAnnotationBuilder {
       } else {
         keyGenerator = NoKeyGenerator.INSTANCE;
       }
-
+      //处理@options
       if (options != null) {
         if (FlushCachePolicy.TRUE.equals(options.flushCache())) {
           flushCache = true;
@@ -396,10 +405,12 @@ public class MapperAnnotationBuilder {
         statementType = options.statementType();
         resultSetType = options.resultSetType();
       }
-
+      //处理@ResultMap
       String resultMapId = null;
+      //这个注解给 @Select 或者 @SelectProvider 提供在 XML 映射中的 <resultMap> 的id
       ResultMap resultMapAnnotation = method.getAnnotation(ResultMap.class);
       if (resultMapAnnotation != null) {
+        //如果有@ResultMap注解
         String[] resultMaps = resultMapAnnotation.value();
         StringBuilder sb = new StringBuilder();
         for (String resultMap : resultMaps) {
@@ -410,9 +421,11 @@ public class MapperAnnotationBuilder {
         }
         resultMapId = sb.toString();
       } else if (isSelect) {
+        //如果没有@ResultMap注解并且是select
+        //处理ResultMap
         resultMapId = parseResultMap(method);
       }
-
+      //添加到configuration的MappedStatement中
       assistant.addMappedStatement(
           mappedStatementId,
           sqlSource,
@@ -440,7 +453,12 @@ public class MapperAnnotationBuilder {
           options != null ? nullOrEmpty(options.resultSets()) : null);
     }
   }
-  
+
+  /**
+   * 处理语言驱动
+   * @param method
+   * @return
+   */
   private LanguageDriver getLanguageDriver(Method method) {
     Lang lang = method.getAnnotation(Lang.class);
     Class<?> langClass = null;
@@ -475,6 +493,11 @@ public class MapperAnnotationBuilder {
     return parameterType;
   }
 
+  /**
+   * 获取方法的返回值
+   * @param method
+   * @return
+   */
   private Class<?> getReturnType(Method method) {
     Class<?> returnType = method.getReturnType();
     Type resolvedReturnType = TypeParameterResolver.resolveReturnType(method, type);
@@ -535,16 +558,24 @@ public class MapperAnnotationBuilder {
    */
   private SqlSource getSqlSourceFromAnnotations(Method method, Class<?> parameterType, LanguageDriver languageDriver) {
     try {
+      //获取sql注解名 insert|update|delete|select
       Class<? extends Annotation> sqlAnnotationType = getSqlAnnotationType(method);
+      //获取sqlProvider注解名
+      // insertProvider|updateProvider|deleteProvider|selectProvider
       Class<? extends Annotation> sqlProviderAnnotationType = getSqlProviderAnnotationType(method);
+      //sql注解与sqlProvider注解二选一
       if (sqlAnnotationType != null) {
         if (sqlProviderAnnotationType != null) {
           throw new BindingException("You cannot supply both a static SQL and SqlProvider to method named " + method.getName());
         }
+        //获取sql注解 insert|update|delete|select
         Annotation sqlAnnotation = method.getAnnotation(sqlAnnotationType);
+        //反射获取sql注解value值
         final String[] strings = (String[]) sqlAnnotation.getClass().getMethod("value").invoke(sqlAnnotation);
+        //构建sql
         return buildSqlSourceFromStrings(strings, parameterType, languageDriver);
       } else if (sqlProviderAnnotationType != null) {
+        //获取sqlProvider注解
         Annotation sqlProviderAnnotation = method.getAnnotation(sqlProviderAnnotationType);
         return new ProviderSqlSource(assistant.getConfiguration(), sqlProviderAnnotation, type, method);
       }
@@ -554,6 +585,13 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  /**
+   * 构建sql
+   * @param strings
+   * @param parameterTypeClass
+   * @param languageDriver
+   * @return
+   */
   private SqlSource buildSqlSourceFromStrings(String[] strings, Class<?> parameterTypeClass, LanguageDriver languageDriver) {
     final StringBuilder sql = new StringBuilder();
     for (String fragment : strings) {
@@ -563,6 +601,12 @@ public class MapperAnnotationBuilder {
     return languageDriver.createSqlSource(configuration, sql.toString().trim(), parameterTypeClass);
   }
 
+  /**
+   * 返回注解名
+   * insert|update|delete|select
+   * @param method
+   * @return
+   */
   private SqlCommandType getSqlCommandType(Method method) {
     Class<? extends Annotation> type = getSqlAnnotationType(method);
 
@@ -702,6 +746,14 @@ public class MapperAnnotationBuilder {
     return args == null ? new Arg[0] : args.value();
   }
 
+  /**
+   * 处理SelectKey
+   * @param selectKeyAnnotation
+   * @param baseStatementId
+   * @param parameterTypeClass
+   * @param languageDriver
+   * @return
+   */
   private KeyGenerator handleSelectKeyAnnotation(SelectKey selectKeyAnnotation, String baseStatementId, Class<?> parameterTypeClass, LanguageDriver languageDriver) {
     String id = baseStatementId + SelectKeyGenerator.SELECT_KEY_SUFFIX;
     Class<?> resultTypeClass = selectKeyAnnotation.resultType();

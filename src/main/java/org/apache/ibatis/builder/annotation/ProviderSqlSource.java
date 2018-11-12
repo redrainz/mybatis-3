@@ -31,6 +31,10 @@ import org.apache.ibatis.session.Configuration;
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
+
+/**
+ * ProviderSql注解处理类
+ */
 public class ProviderSqlSource implements SqlSource {
 
   private final Configuration configuration;
@@ -52,6 +56,13 @@ public class ProviderSqlSource implements SqlSource {
 
   /**
    * @since 3.4.5
+   */
+  /**
+   * 初始化
+   * @param configuration
+   * @param provider
+   * @param mapperType
+   * @param mapperMethod
    */
   public ProviderSqlSource(Configuration configuration, Object provider, Class<?> mapperType, Method mapperMethod) {
     String providerMethodName;
