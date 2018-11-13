@@ -65,7 +65,7 @@ public class XMLScriptBuilder extends BaseBuilder {
   }
 
   /**
-   * 处理${}
+   * 处理${} where if 这些记号标签
    * @param node
    * @return
    */

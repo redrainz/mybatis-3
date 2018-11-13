@@ -18,6 +18,12 @@ package org.apache.ibatis.parsing;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 一般token解析 如${},#{}
+ * 用于解析sql语句中的记号
+ * 具体由TokenHandler转换
+ */
 public class GenericTokenParser {
 
   private final String openToken;
