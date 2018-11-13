@@ -22,10 +22,19 @@ import java.util.List;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 拦截器链
+ */
 public class InterceptorChain {
 
   private final List<Interceptor> interceptors = new ArrayList<Interceptor>();
 
+  /**
+   * 将target加到所有拦截器上
+   * @param target
+   * @return
+   */
   public Object pluginAll(Object target) {
     for (Interceptor interceptor : interceptors) {
       target = interceptor.plugin(target);

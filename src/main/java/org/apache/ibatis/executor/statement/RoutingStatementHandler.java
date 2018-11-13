@@ -32,6 +32,10 @@ import org.apache.ibatis.session.RowBounds;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 默认sql语句处理器
+ */
 public class RoutingStatementHandler implements StatementHandler {
 
   private final StatementHandler delegate;
@@ -54,11 +58,23 @@ public class RoutingStatementHandler implements StatementHandler {
 
   }
 
+  /**
+   * 获取jdbc Statement
+   * @param connection
+   * @param transactionTimeout
+   * @return
+   * @throws SQLException
+   */
   @Override
   public Statement prepare(Connection connection, Integer transactionTimeout) throws SQLException {
     return delegate.prepare(connection, transactionTimeout);
   }
 
+  /**
+   * 将参数拼接入sql语句中
+   * @param statement
+   * @throws SQLException
+   */
   @Override
   public void parameterize(Statement statement) throws SQLException {
     delegate.parameterize(statement);

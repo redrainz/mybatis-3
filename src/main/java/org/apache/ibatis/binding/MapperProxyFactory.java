@@ -25,6 +25,11 @@ import org.apache.ibatis.session.SqlSession;
 /**
  * @author Lasse Voss
  */
+
+/**
+ * mapper代理工厂
+ * @param <T>
+ */
 public class MapperProxyFactory<T> {
 
   private final Class<T> mapperInterface;
@@ -42,11 +47,21 @@ public class MapperProxyFactory<T> {
     return methodCache;
   }
 
+  /**
+   * 返回动态代理类
+   * @param mapperProxy
+   * @return
+   */
   @SuppressWarnings("unchecked")
   protected T newInstance(MapperProxy<T> mapperProxy) {
     return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[] { mapperInterface }, mapperProxy);
   }
 
+  /**
+   * 实例化mapper代理
+   * @param sqlSession
+   * @return
+   */
   public T newInstance(SqlSession sqlSession) {
     final MapperProxy<T> mapperProxy = new MapperProxy<T>(sqlSession, mapperInterface, methodCache);
     return newInstance(mapperProxy);

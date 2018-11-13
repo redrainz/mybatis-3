@@ -23,6 +23,10 @@ import org.apache.ibatis.cache.decorators.TransactionalCache;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 缓存执行器事务缓存管理
+ */
 public class TransactionalCacheManager {
 
   private final Map<Cache, TransactionalCache> transactionalCaches = new HashMap<Cache, TransactionalCache>();

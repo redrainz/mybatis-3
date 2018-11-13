@@ -180,6 +180,12 @@ public class DefaultSqlSession implements SqlSession {
     return insert(statement, null);
   }
 
+  /**
+   * 执行sql
+   * @param statement Unique identifier matching the statement to execute.
+   * @param parameter A parameter object to pass to the statement.
+   * @return
+   */
   @Override
   public int insert(String statement, Object parameter) {
     return update(statement, parameter);
@@ -190,6 +196,12 @@ public class DefaultSqlSession implements SqlSession {
     return update(statement, null);
   }
 
+  /**
+   * 执行sql
+   * @param statement Unique identifier matching the statement to execute.
+   * @param parameter A parameter object to pass to the statement.
+   * @return
+   */
   @Override
   public int update(String statement, Object parameter) {
     try {
@@ -287,6 +299,13 @@ public class DefaultSqlSession implements SqlSession {
     return configuration;
   }
 
+  /**
+   * 获取mapper
+   * 获取mapper代理工厂，并将sqlSession注入
+   * @param type Mapper interface class
+   * @param <T>
+   * @return
+   */
   @Override
   public <T> T getMapper(Class<T> type) {
     return configuration.<T>getMapper(type, this);
@@ -317,6 +336,11 @@ public class DefaultSqlSession implements SqlSession {
     return (!autoCommit && dirty) || force;
   }
 
+  /**
+   * 如果object是集合类型，就返回map，否则就原样返回
+   * @param object
+   * @return
+   */
   private Object wrapCollection(final Object object) {
     if (object instanceof Collection) {
       StrictMap<Object> map = new StrictMap<Object>();

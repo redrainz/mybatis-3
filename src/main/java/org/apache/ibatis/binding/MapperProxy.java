@@ -31,6 +31,11 @@ import org.apache.ibatis.session.SqlSession;
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
+
+/**
+ * mapper代理类
+ * @param <T>
+ */
 public class MapperProxy<T> implements InvocationHandler, Serializable {
 
   private static final long serialVersionUID = -6424540398559729838L;
@@ -44,21 +49,39 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     this.methodCache = methodCache;
   }
 
+  /**
+   * mapper调用
+   * @param proxy
+   * @param method
+   * @param args
+   * @return
+   * @throws Throwable
+   */
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
+      //如果是实例对象就直接调用实例对象的方法
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, args);
+        //如果是接口并且方法前没有abstract修饰符，且不为static就调用默认处理方法
+        //？？可是接口的方法前有abstract修饰符
       } else if (isDefaultMethod(method)) {
         return invokeDefaultMethod(proxy, method, args);
       }
     } catch (Throwable t) {
       throw ExceptionUtil.unwrapThrowable(t);
     }
+    //mapper 方法是接口
     final MapperMethod mapperMethod = cachedMapperMethod(method);
     return mapperMethod.execute(sqlSession, args);
   }
 
+  /**
+   * 将mapper方法放到缓存中，方便重复使用MapperMethod
+   *
+   * @param method
+   * @return
+   */
   private MapperMethod cachedMapperMethod(Method method) {
     MapperMethod mapperMethod = methodCache.get(method);
     if (mapperMethod == null) {
@@ -86,6 +109,12 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
 
   /**
    * Backport of java.lang.reflect.Method#isDefault()
+   */
+  /**
+   * 如果是接口并且方法前没有abstract修饰符
+   * ，且不为static就调用默认处理方法
+   * @param method
+   * @return
    */
   private boolean isDefaultMethod(Method method) {
     return ((method.getModifiers()

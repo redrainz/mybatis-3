@@ -31,6 +31,10 @@ import org.apache.ibatis.transaction.TransactionFactory;
  *
  * @see ManagedTransaction
  */
+
+/**
+ * 默认的事务工厂
+ */
 public class ManagedTransactionFactory implements TransactionFactory {
 
   private boolean closeConnection = true;
@@ -50,6 +54,13 @@ public class ManagedTransactionFactory implements TransactionFactory {
     return new ManagedTransaction(conn, closeConnection);
   }
 
+  /**
+   * 创建事务
+   * @param ds
+   * @param level Desired isolation level
+   * @param autoCommit Desired autocommit
+   * @return
+   */
   @Override
   public Transaction newTransaction(DataSource ds, TransactionIsolationLevel level, boolean autoCommit) {
     // Silently ignores autocommit and isolation level, as managed transactions are entirely

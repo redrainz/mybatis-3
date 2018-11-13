@@ -39,21 +39,42 @@ import java.util.*;
  * @author Eduardo Macarron
  * @author Lasse Voss
  */
+
+/**
+ * mapper方法类
+ * 用于执行sql
+ */
 public class MapperMethod {
 
   private final SqlCommand command;
   private final MethodSignature method;
 
+  /**
+   * 初始化
+   * @param mapperInterface
+   * @param method
+   * @param config
+   */
   public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
+    //处理sql语句
     this.command = new SqlCommand(config, mapperInterface, method);
+    //处理方法
     this.method = new MethodSignature(config, mapperInterface, method);
   }
 
+  /**
+   * 执行sql
+   * @param sqlSession
+   * @param args
+   * @return
+   */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
     switch (command.getType()) {
       case INSERT: {
     	Object param = method.convertArgsToSqlCommandParam(args);
+    	//用于insert|update|delete
+        //返回处理了多少行
         result = rowCountResult(sqlSession.insert(command.getName(), param));
         break;
       }
@@ -95,6 +116,12 @@ public class MapperMethod {
     return result;
   }
 
+  /**
+   * 用于insert|update|delete
+   * 将int转换为其他
+   * @param rowCount
+   * @return
+   */
   private Object rowCountResult(int rowCount) {
     final Object result;
     if (method.returnsVoid()) {
@@ -206,6 +233,9 @@ public class MapperMethod {
 
   }
 
+  /**
+   * sql语句类
+   */
   public static class SqlCommand {
 
     private final String name;
@@ -241,14 +271,25 @@ public class MapperMethod {
       return type;
     }
 
+    /**
+     * 获取Configuration中的MappedStatement
+     * @param mapperInterface
+     * @param methodName
+     * @param declaringClass
+     * @param configuration
+     * @return
+     */
     private MappedStatement resolveMappedStatement(Class<?> mapperInterface, String methodName,
         Class<?> declaringClass, Configuration configuration) {
       String statementId = mapperInterface.getName() + "." + methodName;
       if (configuration.hasStatement(statementId)) {
+        //Configuration存在这个ms返回
         return configuration.getMappedStatement(statementId);
       } else if (mapperInterface.equals(declaringClass)) {
+        //如果mapperInterface就是此方法声明的接口
         return null;
       }
+      //查找接口的接口
       for (Class<?> superInterface : mapperInterface.getInterfaces()) {
         if (declaringClass.isAssignableFrom(superInterface)) {
           MappedStatement ms = resolveMappedStatement(superInterface, methodName,
@@ -262,6 +303,10 @@ public class MapperMethod {
     }
   }
 
+  /**
+   * 方法签名类
+   * 处理方法
+   */
   public static class MethodSignature {
 
     private final boolean returnsMany;
@@ -274,7 +319,14 @@ public class MapperMethod {
     private final Integer rowBoundsIndex;
     private final ParamNameResolver paramNameResolver;
 
+    /**
+     * 初始化
+     * @param configuration
+     * @param mapperInterface
+     * @param method
+     */
     public MethodSignature(Configuration configuration, Class<?> mapperInterface, Method method) {
+
       Type resolvedReturnType = TypeParameterResolver.resolveReturnType(method, mapperInterface);
       if (resolvedReturnType instanceof Class<?>) {
         this.returnType = (Class<?>) resolvedReturnType;
@@ -352,6 +404,11 @@ public class MapperMethod {
       return index;
     }
 
+    /**
+     * 处理MapKey
+     * @param method
+     * @return
+     */
     private String getMapKey(Method method) {
       String mapKey = null;
       if (Map.class.isAssignableFrom(method.getReturnType())) {

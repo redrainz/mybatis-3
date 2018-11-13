@@ -36,6 +36,13 @@ import org.apache.ibatis.transaction.Transaction;
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
+
+/**
+ * 带缓存的执行器
+ * 一个是sqlsession 一个执行器 一个TransactionalCacheManager
+ * Cache取自ms ，所以这里是全局缓存
+ * Cache cache = ms.getCache();
+ */
 public class CachingExecutor implements Executor {
 
   private final Executor delegate;
@@ -70,9 +77,19 @@ public class CachingExecutor implements Executor {
     return delegate.isClosed();
   }
 
+  /**
+   * 处理sql update方法
+   * @param ms
+   * @param parameterObject
+   * @return
+   * @throws SQLException
+   */
   @Override
   public int update(MappedStatement ms, Object parameterObject) throws SQLException {
+    //如果ms中flushCacheRequired为true
+    // 刷新缓存
     flushCacheIfRequired(ms);
+    //执行器调用
     return delegate.update(ms, parameterObject);
   }
 
@@ -89,6 +106,18 @@ public class CachingExecutor implements Executor {
     return delegate.queryCursor(ms, parameter, rowBounds);
   }
 
+  /**
+   * 查询
+   * @param ms
+   * @param parameterObject
+   * @param rowBounds
+   * @param resultHandler
+   * @param key
+   * @param boundSql
+   * @param <E>
+   * @return
+   * @throws SQLException
+   */
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
       throws SQLException {
@@ -161,6 +190,10 @@ public class CachingExecutor implements Executor {
     delegate.clearLocalCache();
   }
 
+  /**
+   * 刷新缓存
+   * @param ms
+   */
   private void flushCacheIfRequired(MappedStatement ms) {
     Cache cache = ms.getCache();
     if (cache != null && ms.isFlushCacheRequired()) {      

@@ -55,6 +55,9 @@ public abstract class BaseExecutor implements Executor {
   protected Executor wrapper;
 
   protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+  /**
+   * 本地缓存即局部缓存，生命周期为sqlsession
+   */
   protected PerpetualCache localCache;
   protected PerpetualCache localOutputParameterCache;
   protected Configuration configuration;
@@ -107,12 +110,20 @@ public abstract class BaseExecutor implements Executor {
     return closed;
   }
 
+  /**
+   * 执行sql update方法
+   * @param ms
+   * @param parameter
+   * @return
+   * @throws SQLException
+   */
   @Override
   public int update(MappedStatement ms, Object parameter) throws SQLException {
     ErrorContext.instance().resource(ms.getResource()).activity("executing an update").object(ms.getId());
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    //清除局部缓存
     clearLocalCache();
     return doUpdate(ms, parameter);
   }
@@ -259,6 +270,9 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
+  /**
+   * 清除局部缓存
+   */
   @Override
   public void clearLocalCache() {
     if (!closed) {
@@ -332,6 +346,12 @@ public abstract class BaseExecutor implements Executor {
     return list;
   }
 
+  /**
+   * 获取数据库连接
+   * @param statementLog
+   * @return
+   * @throws SQLException
+   */
   protected Connection getConnection(Log statementLog) throws SQLException {
     Connection connection = transaction.getConnection();
     if (statementLog.isDebugEnabled()) {

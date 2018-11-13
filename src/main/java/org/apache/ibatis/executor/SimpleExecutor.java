@@ -34,19 +34,33 @@ import java.util.List;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 简单执行器
+ */
 public class SimpleExecutor extends BaseExecutor {
 
   public SimpleExecutor(Configuration configuration, Transaction transaction) {
     super(configuration, transaction);
   }
 
+  /**
+   * 执行sql update
+   * @param ms
+   * @param parameter
+   * @return
+   * @throws SQLException
+   */
   @Override
   public int doUpdate(MappedStatement ms, Object parameter) throws SQLException {
     Statement stmt = null;
     try {
       Configuration configuration = ms.getConfiguration();
+      //获取StatementHandler
       StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, RowBounds.DEFAULT, null, null);
+      //创建jdbc Statement
       stmt = prepareStatement(handler, ms.getStatementLog());
+      //StatementHandler执行  jdbc
       return handler.update(stmt);
     } finally {
       closeStatement(stmt);
@@ -79,10 +93,20 @@ public class SimpleExecutor extends BaseExecutor {
     return Collections.emptyList();
   }
 
+  /**
+   * 获取jdbc Statement
+   * @param handler
+   * @param statementLog
+   * @return
+   * @throws SQLException
+   */
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
+    //获取jdbc connection
     Connection connection = getConnection(statementLog);
+    //获取jdbc Statement
     stmt = handler.prepare(connection, transaction.getTimeout());
+    //将参数拼接入sql语句中
     handler.parameterize(stmt);
     return stmt;
   }

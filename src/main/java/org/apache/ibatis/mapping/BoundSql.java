@@ -33,6 +33,10 @@ import org.apache.ibatis.session.Configuration;
  *
  * @author Clinton Begin
  */
+
+/**
+ * sql语句类
+ */
 public class BoundSql {
 
   private final String sql;

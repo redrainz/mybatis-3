@@ -36,6 +36,10 @@ import org.apache.ibatis.transaction.Transaction;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 重用执行器
+ */
 public class ReuseExecutor extends BaseExecutor {
 
   private final Map<String, Statement> statementMap = new HashMap<String, Statement>();
