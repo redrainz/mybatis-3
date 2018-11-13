@@ -28,6 +28,10 @@ import org.apache.ibatis.reflection.ExceptionUtil;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 用于拦截器声明与调用
+ */
 public class Plugin implements InvocationHandler {
 
   private final Object target;
@@ -40,6 +44,12 @@ public class Plugin implements InvocationHandler {
     this.signatureMap = signatureMap;
   }
 
+  /**
+   * 用Plugin 动态代理target
+   * @param target
+   * @param interceptor
+   * @return
+   */
   public static Object wrap(Object target, Interceptor interceptor) {
     Map<Class<?>, Set<Method>> signatureMap = getSignatureMap(interceptor);
     Class<?> type = target.getClass();
@@ -58,6 +68,7 @@ public class Plugin implements InvocationHandler {
     try {
       Set<Method> methods = signatureMap.get(method.getDeclaringClass());
       if (methods != null && methods.contains(method)) {
+        //拦截器调用
         return interceptor.intercept(new Invocation(target, method, args));
       }
       return method.invoke(target, args);
